@@ -1,6 +1,10 @@
 import Decimal from "break_infinity.js";
 import { units, upgrades, cities, rules, knowledgeSources } from "./content";
-import { createInitialState, discoveredKnowledge, regionUnlocked } from "./state";
+import {
+  createInitialState,
+  discoveredKnowledge,
+  regionUnlocked,
+} from "./state";
 import {
   summonCapacity,
   activeSummons,
@@ -9,17 +13,28 @@ import {
   tickFollowers,
   followerGate,
 } from "./cult";
-import type { GameState, UnitDefinition, UpgradeKind, UpgradeDefinition } from "./types";
+import type {
+  GameState,
+  UnitDefinition,
+  UpgradeKind,
+  UpgradeDefinition,
+} from "./types";
 
 export const upgradeLevel = (state: GameState, id: string): number =>
   state.upgradeLevels[id] ?? (state.upgrades[id] === true ? 1 : 0);
 export const upgradePrice = (state: GameState, upgrade: UpgradeDefinition) => {
   const level = upgrade.repeatable ? upgradeLevel(state, upgrade.id) : 0;
-  return { essence: upgrade.cost.times(Decimal.pow(3, level)), knowledge: new Decimal(upgrade.knowledge).times(Decimal.pow(2, level)) };
+  return {
+    essence: upgrade.cost.times(Decimal.pow(3, level)),
+    knowledge: new Decimal(upgrade.knowledge).times(Decimal.pow(2, level)),
+  };
 };
 export const upgradeMaxed = (state: GameState, upgrade: UpgradeDefinition) =>
-  upgrade.repeatable ? upgradeLevel(state, upgrade.id) >= units.length : hasUpgrade(state, upgrade.id);
-export const nextTrainingEntity = (state: GameState) => units[upgradeLevel(state, "circle")];
+  upgrade.repeatable
+    ? upgradeLevel(state, upgrade.id) >= units.length
+    : hasUpgrade(state, upgrade.id);
+export const nextTrainingEntity = (state: GameState) =>
+  units[upgradeLevel(state, "circle")];
 export const trainingRegionLocked = (state: GameState) => {
   const next = nextTrainingEntity(state);
   return !!next && !regionUnlocked(state, next.region);
@@ -45,7 +60,9 @@ export function multiplier(state: GameState, kind: UpgradeKind): Decimal {
 export const unitPower = (state: GameState, unit: UnitDefinition) =>
   unit.power
     .times(multiplier(state, "power"))
-    .times(unit.tier >= 4 && unit.tier <= 6 ? multiplier(state, "demonPower") : 1)
+    .times(
+      unit.tier >= 4 && unit.tier <= 6 ? multiplier(state, "demonPower") : 1,
+    )
     .times(unit.region === "slavic" ? multiplier(state, "slavicPower") : 1);
 export const armyPower = (state: GameState) =>
   units.reduce(
@@ -62,10 +79,22 @@ export const essenceRate = (state: GameState) =>
     )
     .times(multiplier(state, "essence"));
 export const knowledgeRate = (state: GameState) =>
-  (state.knowledgeSource ? new Decimal(knowledgeSources.find(s => s.id === state.knowledgeSource)?.value ?? 0) : new Decimal(0))
+  (state.knowledgeSource
+    ? new Decimal(
+        knowledgeSources.find((s) => s.id === state.knowledgeSource)?.value ??
+          0,
+      )
+    : new Decimal(0)
+  )
     .plus(state.units.imp.times(0.025))
     .plus(state.units.familiar.times(0.06))
-    .plus(units.reduce((total, unit) => total.plus(state.units[unit.id].times(unit.knowledgePerSecond ?? 0)), new Decimal(0)))
+    .plus(
+      units.reduce(
+        (total, unit) =>
+          total.plus(state.units[unit.id].times(unit.knowledgePerSecond ?? 0)),
+        new Decimal(0),
+      ),
+    )
     .times(multiplier(state, "knowledge"));
 export const pentagramReward = (state: GameState) => ({
   essence: dominionMultiplier(state),
@@ -77,7 +106,8 @@ export function drawPentagram(state: GameState): void {
   state.knowledge = state.knowledge.plus(reward.knowledge);
 }
 export const isUnlocked = (state: GameState, index: number) =>
-  !!units[index] && regionUnlocked(state, units[index].region) &&
+  !!units[index] &&
+  regionUnlocked(state, units[index].region) &&
   (state.debugUnlock ||
     discoveredKnowledge(state).gte(units[index].unlockKnowledge) ||
     state.units[units[index].id].gt(0));
@@ -89,17 +119,33 @@ export const summonDuration = (state: GameState, unit: UnitDefinition) =>
   unit.summonTime /
   multiplier(state, "speed").times(fanaticSpeed(state)).toNumber();
 export const isAutomated = (state: GameState, id: string) => {
-  const index = units.findIndex(u => u.id === id);
-  if (index < 0 || !regionUnlocked(state, units[index].region) || !followerGate(state)) return false;
+  const index = units.findIndex((u) => u.id === id);
+  if (
+    index < 0 ||
+    !regionUnlocked(state, units[index].region) ||
+    !followerGate(state)
+  )
+    return false;
   return state.cult.fanatics.gte(1) && index < upgradeLevel(state, "circle");
 };
-export function summon(state: GameState, id: string, automated = false): boolean {
+export function summon(
+  state: GameState,
+  id: string,
+  automated = false,
+): boolean {
   const index = units.findIndex((u) => u.id === id),
     unit = units[index];
   if (
     !unit ||
     !isUnlocked(state, index) ||
-    state.active[id] || (!automated && state.summonOrder.some(activeId => state.active[activeId] && (!isAutomated(state, activeId) || state.automationPaused[activeId]))) || (!automated && state.knowledgeSource) ||
+    state.active[id] ||
+    (!automated &&
+      state.summonOrder.some(
+        (activeId) =>
+          state.active[activeId] &&
+          (!isAutomated(state, activeId) || state.automationPaused[activeId]),
+      )) ||
+    (!automated && state.knowledgeSource) ||
     activeSummons(state) >= summonCapacity(state)
   )
     return false;
@@ -111,8 +157,12 @@ export function summon(state: GameState, id: string, automated = false): boolean
   state.summonOrder.push(id);
   return true;
 }
-export const upgradeRequirements = (upgrade: { requires?: string | string[] }): string[] =>
-  typeof upgrade.requires === "string" ? [upgrade.requires] : upgrade.requires ?? [];
+export const upgradeRequirements = (upgrade: {
+  requires?: string | string[];
+}): string[] =>
+  typeof upgrade.requires === "string"
+    ? [upgrade.requires]
+    : (upgrade.requires ?? []);
 export function canBuyUpgrade(state: GameState, id: string): boolean {
   const u = upgrades.find((u) => u.id === id);
   return (
@@ -122,7 +172,7 @@ export function canBuyUpgrade(state: GameState, id: string): boolean {
     (!u.repeatable || !trainingRegionLocked(state)) &&
     state.essence.gte(upgradePrice(state, u).essence) &&
     state.knowledge.gte(upgradePrice(state, u).knowledge) &&
-    upgradeRequirements(u).every(id => hasUpgrade(state, id))
+    upgradeRequirements(u).every((id) => hasUpgrade(state, id))
   );
 }
 export function buyUpgrade(state: GameState, id: string): boolean {

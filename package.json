@@ -8,10 +8,21 @@
     "build": "vite build",
     "preview": "vite preview",
     "check": "svelte-check --tsconfig ./tsconfig.json",
-    "test": "node scripts/test.mjs"
+    "test": "node scripts/test.mjs",
+    "pretty": "prettier --write \"./**/*.{js,jsx,mjs,cjs,ts,tsx,json}\""
   },
-  "engines": {"node": ">=22.12.0"},
-  "dependencies": {"break_infinity.js": "^2.2.0", "svelte": "^5.57.0"},
-  "devDependencies": {"@sveltejs/vite-plugin-svelte": "^7.3.0", "svelte-check": "^4.0.0", "typescript": "^5.5.4", "vite": "^8.2.2", "esbuild": "^0.28.2"}
+  "engines": {
+    "node": ">=22.12.0"
+  },
+  "dependencies": {
+    "break_infinity.js": "^2.2.0",
+    "svelte": "^5.57.0"
+  },
+  "devDependencies": {
+    "@sveltejs/vite-plugin-svelte": "^7.3.0",
+    "svelte-check": "^4.0.0",
+    "typescript": "^5.5.4",
+    "vite": "^8.2.2",
+    "esbuild": "^0.28.2"
+  }
 }
-
