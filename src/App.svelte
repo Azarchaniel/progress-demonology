@@ -115,6 +115,14 @@
     for (const unit of units) state.automationPaused[unit.id] = true;
     state = state;
   }
+  function debug(kind: string) {
+    if (kind === "essence") state.essence = state.essence.plus(1000);
+    if (kind === "knowledge") state.knowledge = state.knowledge.plus(100);
+    if (kind === "dominion") state.dominion = state.dominion.plus(10);
+    if (kind === "speed") state.simulationSpeed = state.simulationSpeed === 1 ? 10 : 1;
+    if (kind === "unlock") state.debugUnlock = true;
+    state = state;
+  }
   function reset() {
     state = createInitialState();
     activeTab = "summoning";
@@ -357,6 +365,27 @@
         </div>
       </div>
     </div>
+    <!-- <details class="debug">
+      <summary>Debug / Development Tools</summary>
+      <p>
+        These controls change your saved game. Unlocking reveals units without
+        granting an army.
+      </p>
+      <div class="debug-actions">
+        <button on:click={() => debug("essence")}>+1,000 Essence</button><button
+          on:click={() => debug("knowledge")}>+100 Knowledge</button
+        ><button on:click={() => debug("dominion")}>+10 Dominion</button><button
+          aria-pressed={state.simulationSpeed === 10}
+          on:click={() => debug("speed")}
+          >{state.simulationSpeed === 10
+            ? "Return to 1× speed"
+            : "10× simulation speed"}</button
+        ><button on:click={() => debug("unlock")}>Unlock all units</button
+        ><button class="danger" on:click={() => (resetOpen = true)}
+          >Reset save</button
+        >
+      </div>
+    </details> -->
     {#if resetOpen}<div class="confirmation" role="alert">
         <p>
           Erase this manuscript, including all permanent Dominion? This cannot
