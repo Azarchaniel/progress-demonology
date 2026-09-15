@@ -21,7 +21,6 @@ python -m http.server 8000 --directory dist
 ```
 
 Open http://localhost:8000. Alternatively, use `npm run preview`.
-The source index.html requires Vite; opening it directly with file:// is unsupported.
 
 For itch.io, zip the **contents** of dist so index.html is at the archive root, then upload as an HTML game. The production build uses relative asset paths for embedded/subdirectory hosting.
 
@@ -32,7 +31,7 @@ The Reservoir stays visible in a sticky left sidebar on desktop, including Follo
 ## Play
 
 - Draw pentagrams for Essence and Knowledge, then bind Spirits for passive Essence. Drawing rewards scale with Production. Study books while no manual summon is active; automated summons can run alongside study.
-- Manual summoning uses one circle; Fanatics add shared capacity for automation. Followers arrive after the first Lesser Demon. Every 5 Fanatics adds a circle, up to 6 in Ancient Empires and 12 after Slavic opens; each Fanatic adds 10% summoning speed. Promotion requires 10 discovered Knowledge and spends Followers and Essence.
+- Manual summoning uses one circle; Fanatics add shared capacity for automation. Followers arrive after the first Lesser Demon. Every 5 Fanatics adds a circle, up to 6; each Fanatic adds 10% summoning speed. Promotion requires 10 discovered Knowledge and spends Followers and Essence.
 - **Research spends both Knowledge and Essence.** The reservoir shows spendable Knowledge and total discovered Knowledge for the current run. Spending on research never relocks discovered books or units. Discoveries reset with conquest.
 - **41 upgrades in seven connected branches:** Forbidden Study, Pentagram, Automation, Candles, Sacred Geometry, Incense, and Follower Gain. Some advanced seals require two parents. Ancient research costs reach 35,000 Knowledge and Slavic extensions reach 140,000; two new books unlock at 6,000 and 22,000 discovered Knowledge.
 - In Rituals & Seals, drag the map background to pan in two dimensions. Scroll the wheel to zoom around the pointer, use +/−, Fit tree, or Reset view. Touch devices can pan by swiping. Focus the map for arrow-key scrolling and +/− zoom. Select a node to inspect its effect, dependencies, prices, and missing resources; research from its detail panel.

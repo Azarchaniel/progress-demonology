@@ -1,9 +1,11 @@
 <script lang="ts">
   import { onMount } from "svelte";
   import Decimal from "break_infinity.js";
+  import packageJson from "../package.json";
   import { cities, units, rules, cultRules, knowledgeSources, regions } from "./lib/content";
   import UpgradeTree from "./lib/UpgradeTree.svelte";
   import PentagramBoard from "./lib/PentagramBoard.svelte";
+  import PixelProgressBar from "./lib/PixelProgressBar.svelte";
   import {
     summonCapacity,
     activeSummons,
@@ -226,14 +228,13 @@
           d="M49 21 66 38M75 24 91 40M102 27 117 42M129 29 143 43M155 31 166 45M391 21 374 38M365 24 349 40M338 27 323 42M311 29 297 43M285 31 274 45M220 2V9M176 9 184 17M264 9 256 17"
         />
       </svg>
-      <p class="eyebrow">THE OBSIDIAN CHRONICLE · {region.name.toUpperCase()} · v0.0.1</p>
       <h1>Progress Demonology</h1>
       <p class="subtitle">From the ashes of one empire, another shall rise.</p>
     </div>
-    <div class="edition">VOL. I<span>v0.0.1</span></div>
+    <div class="edition">VOL. I<span>v{packageJson.version}</span></div>
   </header>
-  <main>
-    <p class="eyebrow">REGION · {region.name} · {complete ? "CONQUERED" : `CITY ${state.campaign.cityIndex - region.startIndex + 1} / ${regionalCities.length}`}</p>
+  <main style="position: relative">
+    <p class="eyebrow-absolute">REGION · {region.name} · {complete ? "CONQUERED" : `CITY ${state.campaign.cityIndex - region.startIndex + 1} / ${regionalCities.length}`}</p>
     <section class="campaign">
       <span class="eyebrow"
         >{complete
@@ -316,26 +317,10 @@
                 1,
               )} sec.
             </p>
-            <div
-              class="bar"
-              role="progressbar"
-              aria-label="Next Follower"
-              aria-valuemin="0"
-              aria-valuemax="100"
-              aria-valuenow={Math.min(
-                100,
-                Math.floor(
-                  (state.cult.progress / followerInterval(state)) * 100,
-                ),
-              )}
-            >
-              <i
-                style:width={Math.min(
-                  100,
-                  (state.cult.progress / followerInterval(state)) * 100,
-                ) + "%"}
-              ></i>
-            </div>
+            <PixelProgressBar
+              label="Next Follower"
+              value={Math.min(100, (state.cult.progress / followerInterval(state)) * 100)}
+            />
             <small
               >Next arrival in {fmt(
                 Math.max(0, followerInterval(state) - state.cult.progress),
@@ -362,7 +347,7 @@
           <p>
             Each Fanatic: +{cultRules.speedPerFanatic * 100}% summoning speed.<br
             />Every {cultRules.fanaticsPerCircle} Fanatics: +1 simultaneous circle,
-            up to {regionalUnitCount}.
+            up to 6.
           </p>
           <small
             >Current aid: ×{fmt(fanaticSpeed(state), 2)} speed · {capacity}
@@ -446,14 +431,10 @@
                   Essence; each spirit gathers more. Knowledge slowly reveals
                   the next names.
                 </p>
-                <div class="bar">
-                  <i
-                    style:width={Math.min(
-                      100,
-                      state.essence.div(10).times(100).toNumber(),
-                    ) + "%"}
-                  ></i>
-                </div>
+                <PixelProgressBar
+                  label="First summoning Essence"
+                  value={Math.min(100, state.essence.div(10).times(100).toNumber())}
+                />
                 <small
                   >{fmt(Decimal.min(state.essence, 10), 1)} / 10 Essence · use the
                   summon button below</small
@@ -501,30 +482,10 @@
                         : ""}{fmt(summonDuration(state, unit), 1)} sec</span
                     >
                   </div>
-                  <div
-                    class="bar"
-                    role="progressbar"
-                    aria-label={unit.name + " summoning"}
-                    aria-valuemin="0"
-                    aria-valuemax="100"
-                    aria-valuenow={Math.min(
-                      100,
-                      Math.floor(
-                        (state.progress[unit.id] /
-                          summonDuration(state, unit)) *
-                          100,
-                      ),
-                    )}
-                  >
-                    <i
-                      style:width={Math.min(
-                        100,
-                        (state.progress[unit.id] /
-                          summonDuration(state, unit)) *
-                          100,
-                      ) + "%"}
-                    ></i>
-                  </div>
+                  <PixelProgressBar
+                    label={unit.name + " summoning"}
+                    value={Math.min(100, (state.progress[unit.id] / summonDuration(state, unit)) * 100)}
+                  />
                   <div class="unit-meta">
                     <span
                       >{fmt(unitPower(state, unit))} power each ·
@@ -569,7 +530,7 @@
                 </article>
               {/if}
             {/each}
-            {#if !regionUnlocked(state, "slavic")}<p class="section-note">Conquer Alexandria to open Slavic: Bludička, Rusalka, Upír, Striga, Lešij, and Čert.</p>{/if}
+            {#if !regionUnlocked(state, "slavic")}<p class="section-note">Conquer Alexandria to open Slavic: Will-o'-the-wisp, Water nymph, Vampire, Striga, Leshij, and Chort.</p>{/if}
             {#if nextUnit}<div class="locked-unit">
                 <span class="eyebrow">THE NEXT NAME IS SEALED</span>
                 <h3>{nextUnit.name}</h3>
@@ -609,13 +570,11 @@
                     <span class="owned">+{fmt(multiplier(state, "knowledge").times(source.value), 2)} / sec</span>
                   </div>
                   <p class="unit-description">{source.description}</p>
-                  <div class="bar">
-                    <i
-                      style:width={(state.knowledgeSource === source.id
-                        ? 100
-                        : 0) + "%"}
-                    ></i>
-                  </div>
+                  <PixelProgressBar
+                    full={state.knowledgeSource === source.id}
+                    label={source.title + " study"}
+                    value={state.knowledgeSource === source.id ? 100 : 0}
+                  />
                   <div class="unit-meta">
                     <span>Requires {fmt(source.requirement)} discovered Knowledge</span><button
                       disabled={discoveredKnowledge(state).lt(source.requirement) ||
@@ -659,8 +618,9 @@
             <h2><span>III</span> Rituals & Seals</h2>
             {#if ritualsOpen}
               <p class="section-note">
-                Research spends Essence and Knowledge. Discovered units and books stay unlocked.
+                Research spends Essence and Knowledge.
                 Drag the map to explore; use the wheel or buttons to zoom.
+                Double click for quick buy.
               </p>
               <UpgradeTree {state} on:buy={(event) => action(() => buyUpgrade(state, event.detail))} />
             {:else}<div class="sealed">
@@ -718,12 +678,11 @@
                     <span>Army {fmt(power)} / Defense {fmt(city.strength)}</span
                     ><b>{fmt(readiness, 1)}% ready</b>
                   </div>
-                  <div class="bar"><i style:width={readiness + "%"}></i></div>
-                  <small
-                    >Victory chance: {readiness >= 100
-                      ? "100% · assured"
-                      : "0% · insufficient power"}.</small
-                  >
+                  <PixelProgressBar
+                    label={city.name + " conquest readiness"}
+                    value={readiness}
+                    showPile={false}
+                  />
                 </div>
                 <div class="conquest-action">
                   <button

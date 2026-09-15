@@ -45,6 +45,7 @@ import {
   summonCapacity,
   activeSummons,
   runningSummons,
+  followerGate,
   canPromote,
   promoteFanatic,
   fanaticSpeed,
@@ -157,6 +158,16 @@ test("Followers arrive after the first Lesser Demon and promotion spends one Fol
   assert.equal(summonCapacity(restored), 6);
   restored.campaign.cityIndex = 6;
   assert.equal(summonCapacity(restored), 12);
+});
+
+test("Followers also arrive when a higher-tier demon is the first completed demon", () => {
+  const s = createInitialState();
+  s.units.demon = new Decimal(1);
+
+  assert.equal(followerGate(s), true);
+  for (let i = 0; i < 30; i++) tick(s, 1);
+
+  assert.ok(s.cult.followers.eq(1));
 });
 
 test("legacy simultaneous summons are paid queued jobs, preserved across reload", () => {

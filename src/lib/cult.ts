@@ -31,8 +31,15 @@ export const followerInterval = (state: GameState) =>
     .plus(1)
     .times(followerMultiplier(state))
     .toNumber();
-export const followerGate = (state: GameState) =>
-  state.units[cultRules.fanaticUnlockUnit].gt(0);
+export const followerGate = (state: GameState) => {
+  const unlockUnit = units.find(
+    (unit) => unit.id === cultRules.fanaticUnlockUnit,
+  );
+  if (!unlockUnit) return false;
+  return units.some(
+    (unit) => unit.tier >= unlockUnit.tier && state.units[unit.id].gt(0),
+  );
+};
 export const fanaticPromotionCost = (state: GameState) =>
   new Decimal(cultRules.promotionEssence).times(
     Decimal.pow(cultRules.promotionCostGrowth, state.cult.fanatics.toNumber()),

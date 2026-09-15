@@ -243,6 +243,10 @@
             style:top={node.y + "px"}
             aria-pressed={selected === node.upgrade.id}
             on:click={() => (selected = node.upgrade.id)}
+            on:dblclick={() => {
+              dispatch("buy", selected)
+            }
+              }
           >
             <span class="status"
               >{inscribed
@@ -426,6 +430,9 @@
   }
   .node strong {
     font-size: 1rem;
+  }
+  .node:hover small {
+    color: #000;
   }
   .node .status {
     font-size: 0.65rem;

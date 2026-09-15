@@ -8,12 +8,10 @@ export function formatNumber(
   const n = new Decimal(value);
   if (!Number.isFinite(n.mantissa) || !Number.isFinite(n.exponent)) return "∞";
   if (n.abs().lt(1e6))
-    return n
-      .toNumber()
-      .toLocaleString("en-US", {
-        minimumFractionDigits: 0,
-        maximumFractionDigits: decimals,
-      });
+    return n.toNumber().toLocaleString("en-US", {
+      minimumFractionDigits: 0,
+      maximumFractionDigits: decimals,
+    });
   const suffixes = ["", "K", "M", "B", "T", "Qa", "Qi"];
   const group = Math.floor(n.exponent / 3);
   if (group < suffixes.length)
