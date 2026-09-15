@@ -1,6 +1,6 @@
 # Progress Demonology
 
-**v0.0.1** — a playable desktop-first incremental grimoire. Bind twelve orders of entities, inscribe rituals, and march through twelve cities in Ancient Empires and Slavic, sacrificing armies for permanent Dominion.
+**v0.1.0** — a playable desktop-first incremental grimoire. Bind twelve orders of entities, inscribe rituals, and march through twelve cities in Ancient Empires and Slavic, sacrificing armies for permanent Dominion.
 
 Built with **TypeScript, Svelte 5, Vite 8, and break_infinity.js**. The interface uses local serif fonts, a pure black background with white lettering, a winged solar seal, stepped ancient gates, monumental typography, and distressed manuscript borders (no gray fills, gradients, translucency, or shaded shadows), and an inline geometric seal; no external font or image downloads are required.
 
@@ -62,7 +62,7 @@ The balance regression models active play: one pentagram every ten seconds, deci
 
 The browser stores a versioned JSON document under **progress-demonology-save**. Decimal values serialize as strings, preserving very large numbers. Units, paid summons in progress and their order, Followers, Fanatics, recruitment progress, ritual ownership, individual automation pauses, Dominion, current campaign city, victory history, debug settings, spent research Knowledge, the active study source, and save timestamps survive reload.
 
-Autosave runs once every 15 real seconds, plus on page hide and visibility loss. **Save manuscript** provides a manual save. Storage failures appear in the footer. Invalid fields are sanitized; unreadable or unsupported-version documents are copied to **progress-demonology-save-recovery** before a fresh run opens. Earlier 0.0.1 saves retain valid resources, army, upgrades, and Dominion and start the new campaign at Babylon. Old victories do not skip new cities. The unfinished scaffold city index and free-replication progress are not continued. Paid simultaneous summons from older saves are preserved in a queue and only advance when a circle is available. They are never charged again.
+Autosave runs once every 30 real seconds, plus on page hide and visibility loss. **Save manuscript** provides a manual save. Storage failures appear in the footer. Invalid fields are sanitized; unreadable or unsupported-version documents are copied to **progress-demonology-save-recovery** before a fresh run opens. Earlier 0.0.1 saves retain valid resources, army, upgrades, and Dominion and start the new campaign at Babylon. Old victories do not skip new cities. The unfinished scaffold city index and free-replication progress are not continued. Paid simultaneous summons from older saves are preserved in a queue and only advance when a circle is available. They are never charged again.
 
 **Reset save** in the debug panel requires a second confirmation and clears all active progress, including Dominion. A recovery backup, if one exists, is left intact. Saves are local to each browser and origin; different ports, localhost, 127.0.0.1, and itch.io do not share saves.
 
@@ -97,20 +97,7 @@ The tests cover the opening summon, unlock gates, parallel summoning, paid autom
 
 ## Known limitations
 
-Six cities are playable in sequence. This is a fictional ancient-world/Silk Road campaign, not a historical timeline; additional regions remain future content. Combat is deterministic. Background/offline production, cloud saves, multiple simultaneous tabs sharing one save, mobile-specific tuning, and dimensional gameplay are not implemented. Browser UI was smoke-tested in Chromium; Firefox-specific testing remains outstanding. Balance is provisional and strategy-dependent.
-
-## Roadmap
-
-- **v0.0.2:** player feedback, balance, hierarchy and unlock tree, cultural differences.
-- **v0.0.3:** expanded cities, regional conquest, Slavic tradition, deeper prestige.
-- **Later:** countries, continents, Earth conquest/destruction, dimensions, and new traditions.
-
-
-
-
-
-
-Research migration: older saves default spent Knowledge to zero and retain their owned upgrades, including seals whose prerequisites have changed. Existing units remain usable. New balance prices and discovery requirements apply immediately; this is a balance revision, not a save reset.
+Twelve cities are playable in sequence. This is a fictional ancient-world/Silk Road campaign, not a historical timeline; additional regions remain future content. Combat is deterministic. Background/offline production, cloud saves, multiple simultaneous tabs sharing one save, mobile-specific tuning, and dimensional gameplay are not implemented. Browser UI was smoke-tested in Chromium; Firefox-specific testing remains outstanding. Balance is provisional and strategy-dependent.
 
 ## Slavic region
 
@@ -120,14 +107,14 @@ The original units remain available. Six additional orders unlock in Slavic thro
 
 | Entity | Knowledge | Base Essence cost | Base power |
 |---|---:|---:|---:|
-| Bludička | 1,200 | 250,000 | 30,000 |
-| Rusalka | 4,000 | 1,000,000 | 120,000 |
-| Upír | 12,000 | 4,000,000 | 500,000 |
+| Will-o'-the-wisp | 1,200 | 250,000 | 30,000 |
+| Water nymph | 4,000 | 1,000,000 | 120,000 |
+| Vampire | 12,000 | 4,000,000 | 500,000 |
 | Striga | 30,000 | 16,000,000 | 2,000,000 |
-| Lešij | 75,000 | 60,000,000 | 8,000,000 |
-| Čert | 180,000 | 250,000,000 | 35,000,000 |
+| Leshij | 75,000 | 60,000,000 | 8,000,000 |
+| Chort | 180,000 | 250,000,000 | 35,000,000 |
 
-Bludička, Rusalka, Striga, and Lešij also generate Knowledge. Fanatic Training levels 7–12 automate the new units once their Knowledge requirements are met and a Fanatic is present. Demon-specific bonuses remain limited to tiers IV–VI; Slavic entities benefit from their own power research and general army bonuses.
+Will-o'-the-wisp, Water nymph, Striga, and Leshij also generate Knowledge. Fanatic Training levels 7–12 automate the new units once their Knowledge requirements are met and a Fanatic is present. Demon-specific bonuses remain limited to tiers IV–VI; Slavic entities benefit from their own power research and general army bonuses.
 
 Seven region-gated seals extend existing tree branches: Book of Veles, Knot of the Three Worlds, Circle of the Grove, Midsummer Bonfire, Perun’s Thunder, Offering to the Old Gods, and Ancestral Covenant. Their effects cover Knowledge, summoning speed/cost, Essence, general/Slavic power, and Followers. They still consume both Knowledge and Essence and reset on conquest.
 

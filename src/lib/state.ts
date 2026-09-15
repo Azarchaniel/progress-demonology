@@ -12,7 +12,53 @@ import {
 import type { GameState } from "./types";
 
 export const SAVE_KEY = "progress-demonology-save";
+const ENCODED_SAVE_PREFIX = "PD1";
+// This is obfuscation, not a secret: every browser-delivered key can be found by a determined player.
+const SAVE_SALT = "progress-demonology-manuscript-v1";
 export let loadNotice = "";
+
+function bytesToBase64(bytes: Uint8Array): string {
+  let binary = "";
+  for (const byte of bytes) binary += String.fromCharCode(byte);
+  return btoa(binary);
+}
+
+function base64ToBytes(value: string): Uint8Array {
+  const binary = atob(value);
+  const bytes = new Uint8Array(binary.length);
+  for (let i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i);
+  return bytes;
+}
+
+function checksum(bytes: Uint8Array): string {
+  let hash = 2166136261;
+  for (const byte of bytes) {
+    hash ^= byte;
+    hash = Math.imul(hash, 16777619);
+  }
+  return (hash >>> 0).toString(16).padStart(8, "0");
+}
+
+function encodeSave(json: string): string {
+  const source = new TextEncoder().encode(json);
+  const salt = new TextEncoder().encode(SAVE_SALT);
+  const encoded = source.map((byte, index) => byte ^ salt[index % salt.length]);
+  return `${ENCODED_SAVE_PREFIX}.${checksum(encoded)}.${bytesToBase64(encoded)}`;
+}
+
+function decodeSave(value: string): string {
+  const parts = value.split(".");
+  if (parts.length !== 3 || parts[0] !== ENCODED_SAVE_PREFIX)
+    throw new Error("Unsupported save encoding");
+  const encoded = base64ToBytes(parts[2]);
+  if (checksum(encoded) !== parts[1])
+    throw new Error("Save integrity check failed");
+  const salt = new TextEncoder().encode(SAVE_SALT);
+  const decoded = encoded.map(
+    (byte, index) => byte ^ salt[index % salt.length],
+  );
+  return new TextDecoder().decode(decoded);
+}
 export function createInitialState(): GameState {
   return {
     version: VERSION,
@@ -175,7 +221,10 @@ export function deserializeState(json: string): GameState {
 export function saveState(state: GameState): boolean {
   const timestamp = Date.now();
   try {
-    localStorage.setItem(SAVE_KEY, serializeState(state, timestamp));
+    localStorage.setItem(
+      SAVE_KEY,
+      encodeSave(serializeState(state, timestamp)),
+    );
     state.lastSave = timestamp;
     return true;
   } catch {
@@ -188,7 +237,11 @@ export function loadState(): GameState {
     const raw = localStorage.getItem(SAVE_KEY);
     if (!raw) return createInitialState();
     try {
-      const state = deserializeState(raw);
+      // Keep older plaintext saves loadable; the next save upgrades them automatically.
+      const payload = raw.startsWith(ENCODED_SAVE_PREFIX + ".")
+        ? decodeSave(raw)
+        : raw;
+      const state = deserializeState(payload);
       loadNotice =
         "Manuscript restored. Time away is not simulated in this prototype.";
       return state;
