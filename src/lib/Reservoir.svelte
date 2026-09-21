@@ -14,6 +14,7 @@
   import { discoveredKnowledge } from "./state";
   import { essenceRate, knowledgeRate } from "./simulation";
   import type { GameState } from "./types";
+  import Tooltip from "./Tooltip.svelte";
 
   export let state: GameState;
   export let power: Decimal;
@@ -77,11 +78,17 @@
         Reach Lesser Demon to attract Followers. Their faith will become your
         strength.
       </p>{/if}
-    <button
-      class="promote-button"
+    <Tooltip
       disabled={!canPromote(state)}
-      on:click={() => action(() => promoteFanatic(state))}
-      >Initiate a Fanatic</button
+      text={canPromote(state)
+        ? "Convert Followers and Essence into a permanent summoning speed bonus."
+        : `Requires ${cultRules.followersPerFanatic} Followers, ${fmt(fanaticPromotionCost(state))} Essence, and ${cultRules.promotionKnowledge} Knowledge.`}
+      ><button
+        class="promote-button"
+        disabled={!canPromote(state)}
+        on:click={() => action(() => promoteFanatic(state))}
+        >Initiate a Fanatic</button
+      ></Tooltip
     >
     <small
       >Costs {cultRules.followersPerFanatic} Follower + {fmt(

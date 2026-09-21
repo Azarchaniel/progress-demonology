@@ -19,6 +19,7 @@
     pentagramReward,
   } from "./simulation";
   import type { GameState } from "./types";
+  import Tooltip from "./Tooltip.svelte";
 
   export let state: GameState;
   export let manualSummoning: boolean;
@@ -32,6 +33,24 @@
   export let action: (fn: () => boolean) => void;
   export let pause: (id: string) => void;
   export let pauseAll: () => void;
+
+  // Explicit arguments expose every dependency to Svelte's legacy reactivity.
+  function summonReason(
+    unit: (typeof units)[number],
+    state: GameState,
+    manualSummoning: boolean,
+    occupied: number,
+    capacity: number,
+  ) {
+    if (state.active[unit.id]) return "This entity is already binding or queued.";
+    if (manualSummoning) return "Finish the current manual summoning first.";
+    if (state.knowledgeSource && !isAutomated(state, unit.id))
+      return "Deactivate the active Knowledge Source first.";
+    if (occupied >= capacity) return "All summoning circles are occupied.";
+    if (state.essence.lt(summonCost(state, unit)))
+      return `Need ${fmt(summonCost(state, unit).minus(state.essence).max(0), 1)} more Essence.`;
+    return "";
+  }
 </script>
 
 <section class="army">
@@ -65,6 +84,7 @@
       >
     </div>{/if}
   {#each units as unit, index}
+    {@const reason = summonReason(unit, state, manualSummoning, occupied, capacity)}
     {#if isUnlocked(state, index)}
       <article class="unit">
         <div class="unit-head">
@@ -138,12 +158,10 @@
                 multiplier(state, "knowledge").times(unit.knowledgePerSecond),
                 2,
               )} Knowledge/sec each{/if}</span
-          ><button
-            disabled={state.active[unit.id] ||
-              manualSummoning ||
-              (!!state.knowledgeSource && !isAutomated(state, unit.id)) ||
-              occupied >= capacity ||
-              state.essence.lt(summonCost(state, unit))}
+          ><Tooltip
+            disabled={!!reason}
+            text={reason}><button
+            disabled={!!reason}
             on:click={() => action(() => summon(state, unit.id))}
             >{state.active[unit.id]
               ? running.includes(unit.id)
@@ -152,7 +170,7 @@
               : occupied >= capacity
                 ? "Circle occupied · " + fmt(summonCost(state, unit), 1)
                 : "Summon · " + fmt(summonCost(state, unit), 1)}</button
-          >
+          ></Tooltip>
         </div>
         {#if isAutomated(state, unit.id)}<button
             class="text-button auto-toggle"
@@ -218,7 +236,17 @@
         />
         <div class="unit-meta">
           <span>Requires {fmt(source.requirement)} discovered Knowledge</span
-          ><button
+          ><Tooltip
+            disabled={discoveredKnowledge(state).lt(source.requirement) ||
+              manualSummoning}
+            text={discoveredKnowledge(state).lt(source.requirement)
+              ? `Discover ${fmt(Math.max(0, source.requirement - discoveredKnowledge(state).toNumber()), 1)} more Knowledge first.`
+              : manualSummoning
+                ? "Finish the current manual summoning first."
+                : state.knowledgeSource === source.id
+                  ? "Stop studying this source."
+                  : "Begin studying this source."}
+            ><button
             disabled={discoveredKnowledge(state).lt(source.requirement) ||
               manualSummoning}
             on:click={() =>
@@ -230,7 +258,7 @@
             >{state.knowledgeSource === source.id
               ? "Active · Deactivate"
               : "Study"}</button
-          >
+            ></Tooltip>
         </div>
       </article>{:else if index === nextKnowledgeIndex}<article class="unit locked">
         <div class="unit-head">

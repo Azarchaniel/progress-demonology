@@ -14,6 +14,7 @@
   import { regionUnlocked } from "./state";
   import { formatNumber as fmt } from "./format";
   import type { GameState, UpgradeDefinition } from "./types";
+  import Tooltip from "./Tooltip.svelte";
 
   export let state: GameState;
   const dispatch = createEventDispatcher<{ buy: string }>();
@@ -69,6 +70,15 @@
     (id) => !hasUpgrade(state, id),
   );
   $: acquired = upgrades.filter((u) => hasUpgrade(state, u.id)).length;
+  $: purchaseReason = owned
+    ? "This seal is already fully inscribed."
+    : regionLocked
+      ? "Conquer Alexandria to unlock Slavic research."
+      : missing.length
+        ? "Research the required seals first."
+        : canBuyUpgrade(state, selected)
+          ? "Spend the shown resources to inscribe this seal."
+          : `Need ${fmt(price.essence.minus(state.essence).max(0))} more Essence and ${fmt(price.knowledge.minus(state.knowledge).max(0), 1)} more Knowledge.`;
 
   function setZoom(
     value: number,
@@ -153,17 +163,17 @@
       </p>
     </div>
     <div class="controls" aria-label="Research map controls">
-      <button
+      <Tooltip disabled={zoom > 0.15} text="Zoom is already at its minimum."><button
         aria-label="Zoom out"
         disabled={zoom <= 0.15}
         on:click={() => setZoom(zoom - 0.1)}>−</button
-      >
+      ></Tooltip>
       <output aria-label="Zoom level">{Math.round(zoom * 100)}%</output>
-      <button
+      <Tooltip disabled={zoom < 1.5} text="Zoom is already at its maximum."><button
         aria-label="Zoom in"
         disabled={zoom >= 1.5}
         on:click={() => setZoom(zoom + 0.1)}>+</button
-      >
+      ></Tooltip>
       <button on:click={fit}>Fit tree</button>
       <button
         on:click={() => {
@@ -233,21 +243,31 @@
               (id) => !hasUpgrade(state, id),
             )}
           {@const available = canBuyUpgrade(state, node.upgrade.id)}
-          <button
-            class="node"
-            class:selected={selected === node.upgrade.id}
-            class:inscribed
-            class:locked
-            class:available
-            style:left={node.x + "px"}
-            style:top={node.y + "px"}
-            aria-pressed={selected === node.upgrade.id}
-            on:click={() => (selected = node.upgrade.id)}
-            on:dblclick={() => {
-              dispatch("buy", selected)
-            }
+          <Tooltip
+            disabled={inscribed || (!locked && available)}
+            text={locked
+              ? node.upgrade.region && !regionUnlocked(state, node.upgrade.region)
+                ? "Conquer Alexandria to unlock this research."
+                : `Research the parent first: ${upgradeRequirements(node.upgrade)
+                    .filter((id) => !hasUpgrade(state, id))
+                    .map((id) => upgrades.find((u) => u.id === id)?.name)
+                    .join(", ")}.`
+              : `Insufficient resources. Need ${fmt(upgradePrice(state, node.upgrade).essence.minus(state.essence).max(0))} more Essence and ${fmt(upgradePrice(state, node.upgrade).knowledge.minus(state.knowledge).max(0), 1)} more Knowledge.`}
+            ><button
+              class="node"
+              class:selected={selected === node.upgrade.id}
+              class:inscribed
+              class:locked
+              class:available
+              style:left={node.x + "px"}
+              style:top={node.y + "px"}
+              aria-pressed={selected === node.upgrade.id}
+              on:click={() => (selected = node.upgrade.id)}
+              on:dblclick={() => {
+                dispatch("buy", selected)
               }
-          >
+                }
+            >
             <span class="status"
               >{inscribed
                 ? "✓ Inscribed"
@@ -277,7 +297,7 @@
               <small
                 >{fmt(upgradePrice(state, node.upgrade).essence)} Essence</small
               >{/if}
-          </button>
+            </button></Tooltip>
         {/each}
       </div>
     </div>
@@ -311,7 +331,7 @@
           ? "Training complete"
           : `${fmt(price.knowledge)} Knowledge + ${fmt(price.essence)} Essence`}
       </p>
-      <button
+      <Tooltip disabled={canBuyUpgrade(state, selected)} text={purchaseReason}><button
         disabled={!canBuyUpgrade(state, selected)}
         on:click={() => dispatch("buy", selected)}
         >{owned
@@ -319,7 +339,7 @@
           : upgrade.repeatable
             ? `Research level ${level + 1} · ${next?.name ?? ""}`
             : "Research " + upgrade.name}</button
-      >
+      ></Tooltip>
       {#if !owned}<small
           >{regionLocked
             ? "Conquer Alexandria to unlock Slavic research."

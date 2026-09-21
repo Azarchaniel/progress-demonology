@@ -5,6 +5,7 @@
   import { formatNumber as fmt } from "./format";
   import { dominionMultiplier } from "./simulation";
   import type { CityDefinition, GameState } from "./types";
+  import Tooltip from "./Tooltip.svelte";
 
   export let state: GameState;
   export let city: CityDefinition | undefined;
@@ -59,10 +60,16 @@
         />
       </div>
       <div class="conquest-action">
-        <button
-          class="primary"
-          disabled={readiness < 100}
-          on:click={() => (conquestOpen = true)}>Conquer {city.name}</button
+        <Tooltip
+          disabled={readiness >= 100}
+          text={readiness < 100
+            ? `Insufficient army strength. Need ${fmt(city.strength.minus(power).max(0))} more Army Power.`
+            : "Open the victory confirmation and sacrifice your army."}
+          ><button
+            class="primary"
+            disabled={readiness < 100}
+            on:click={() => (conquestOpen = true)}>Conquer {city.name}</button
+          ></Tooltip
         ><small
           >+{city.reward} permanent Dominion<br />{nextCity
             ? (nextCity.region !== city.region
